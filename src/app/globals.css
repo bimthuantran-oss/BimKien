@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-white text-ink-900 antialiased;
+  }
+  ::selection {
+    @apply bg-accent-500/30 text-ink-900;
+  }
+}
+
+@layer components {
+  .container-wide {
+    @apply mx-auto w-full max-w-[1280px] px-5 md:px-8;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-accent-500;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-6 py-3 text-sm font-semibold uppercase tracking-wide transition-all duration-200;
+  }
+  .btn-primary {
+    @apply btn bg-accent-500 text-white shadow-glow hover:bg-accent-600 active:scale-[0.98];
+  }
+  .btn-outline {
+    @apply btn border border-white/30 text-white hover:border-white hover:bg-white/10;
+  }
+  .btn-outline-dark {
+    @apply btn border border-ink-900/20 text-ink-900 hover:border-ink-900 hover:bg-ink-900/5;
+  }
+  .btn-ghost {
+    @apply btn text-ink-900 hover:text-accent-500;
+  }
+
+  .card-surface {
+    @apply rounded-xl border border-ink-100 bg-white shadow-card transition-shadow duration-300 hover:shadow-glow;
+  }
+
+  .reveal {
+    @apply opacity-0 translate-y-4;
+    animation: none;
+  }
+  .reveal.is-visible {
+    animation: fade-up 0.7s ease-out forwards;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Rich text content rendering for posts / lessons */
+.prose-bim {
+  @apply prose max-w-none prose-headings:font-display prose-headings:font-bold prose-headings:text-ink-900 prose-a:text-accent-600 prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg prose-strong:text-ink-900;
+}
+
+/* Simple custom scrollbar for admin panels */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 107, 26, 0.4);
+  border-radius: 999px;
+}

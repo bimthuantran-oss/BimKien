@@ -1,0 +1,419 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Enums ----------
+
+enum Role {
+  ADMIN
+  EDITOR
+  STUDENT
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum CommentStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+}
+
+enum ContactStatus {
+  NEW
+  REPLIED
+  ARCHIVED
+}
+
+enum PurchaseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ---------- Core identity ----------
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  phone          String?
+  passwordHash   String
+  image          String?
+  bio            String?
+  role           Role      @default(STUDENT)
+  isBanned       Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  posts          Post[]
+  comments       Comment[]
+  enrollments    Enrollment[]
+  lessonProgress LessonProgress[]
+  favorites      FavoritePost[]
+  familyDownloads     FamilyDownload[]
+  familyAccess        FamilyAccess[]
+  familyPurchaseReqs  FamilyPurchaseRequest[]
+}
+
+// ---------- Blog ----------
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  nameEn      String?
+  slug        String   @unique
+  description String?
+  posts       Post[]
+  createdAt   DateTime @default(now())
+}
+
+model Tag {
+  id    String @id @default(cuid())
+  name  String
+  slug  String @unique
+  posts Post[]
+}
+
+model Post {
+  id              String        @id @default(cuid())
+  title           String
+  titleEn         String?
+  slug            String        @unique
+  excerpt         String
+  excerptEn       String?
+  content         String        @db.Text
+  contentEn       String?       @db.Text
+  coverImage      String?
+  status          ContentStatus @default(DRAFT)
+  viewCount       Int           @default(0)
+  metaTitle       String?
+  metaTitleEn     String?
+  metaDescription String?
+  metaDescriptionEn String?
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  authorId   String
+  author     User      @relation(fields: [authorId], references: [id])
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  tags       Tag[]
+
+  comments  Comment[]
+  favorites FavoritePost[]
+
+  @@index([status, publishedAt])
+}
+
+model FavoritePost {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, postId])
+}
+
+// ---------- Projects (portfolio) ----------
+
+model Project {
+  id              String        @id @default(cuid())
+  title           String
+  titleEn         String?
+  slug            String        @unique
+  summary         String
+  summaryEn       String?
+  content         String        @db.Text
+  contentEn       String?       @db.Text
+  coverImage      String?
+  projectType     String
+  investor        String?
+  location        String?
+  scale           String?
+  completedYear   Int?
+  bimModelUrl     String?
+  status          ContentStatus @default(DRAFT)
+  metaTitle       String?
+  metaTitleEn     String?
+  metaDescription String?
+  metaDescriptionEn String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  images ProjectImage[]
+
+  @@index([status, projectType])
+}
+
+model ProjectImage {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url       String
+  caption   String?
+  order     Int     @default(0)
+}
+
+// ---------- Courses ----------
+
+model Course {
+  id              String        @id @default(cuid())
+  title           String
+  titleEn         String?
+  slug            String        @unique
+  description     String        @db.Text
+  descriptionEn   String?       @db.Text
+  coverImage      String?
+  level           CourseLevel   @default(BEGINNER)
+  price           Int           @default(0)
+  status          ContentStatus @default(DRAFT)
+  metaTitle       String?
+  metaTitleEn     String?
+  metaDescription String?
+  metaDescriptionEn String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  chapters    Chapter[]
+  enrollments Enrollment[]
+  comments    Comment[]
+
+  @@index([status, level])
+}
+
+model Chapter {
+  id       String @id @default(cuid())
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title    String
+  titleEn  String?
+  order    Int    @default(0)
+  lessons  Lesson[]
+}
+
+model Lesson {
+  id          String  @id @default(cuid())
+  chapterId   String
+  chapter     Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  title       String
+  titleEn     String?
+  slug        String
+  order       Int     @default(0)
+  videoUrl    String?
+  content     String? @db.Text
+  contentEn   String? @db.Text
+  durationMin Int?
+
+  attachments Attachment[]
+  progress    LessonProgress[]
+
+  @@unique([chapterId, slug])
+}
+
+model Attachment {
+  id       String @id @default(cuid())
+  lessonId String
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  name     String
+  url      String
+  fileType String
+}
+
+model Enrollment {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+
+  @@unique([userId, courseId])
+}
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+
+  @@unique([userId, lessonId])
+}
+
+// ---------- Engagement ----------
+
+model Comment {
+  id        String        @id @default(cuid())
+  content   String        @db.Text
+  status    CommentStatus @default(APPROVED)
+  authorId  String
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  postId    String?
+  post      Post?         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  courseId  String?
+  course    Course?       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies   Comment[]     @relation("CommentReplies")
+  createdAt DateTime      @default(now())
+
+  @@index([postId])
+  @@index([courseId])
+}
+
+model Contact {
+  id         String        @id @default(cuid())
+  name       String
+  email      String
+  phone      String?
+  subject    String
+  message    String        @db.Text
+  status     ContactStatus @default(NEW)
+  adminReply String?       @db.Text
+  repliedAt  DateTime?
+  createdAt  DateTime      @default(now())
+}
+
+// ---------- Thư viện Family Revit ----------
+
+model FamilyCategory {
+  id        String    @id @default(cuid())
+  name      String
+  nameEn    String?
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  families  Family[]
+}
+
+model Family {
+  id              String        @id @default(cuid())
+  title           String
+  titleEn         String?
+  slug            String        @unique
+  description     String        @db.Text
+  descriptionEn   String?       @db.Text
+  previewImage    String?
+  fileUrl         String?
+  fileName        String?
+  fileSize        Int?
+  softwareInfo    String?
+  price           Int           @default(0)
+  status          ContentStatus @default(DRAFT)
+  downloadCount   Int           @default(0)
+  metaTitle       String?
+  metaTitleEn     String?
+  metaDescription String?
+  metaDescriptionEn String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  categoryId String?
+  category   FamilyCategory? @relation(fields: [categoryId], references: [id])
+
+  downloads       FamilyDownload[]
+  access          FamilyAccess[]
+  purchaseReqs    FamilyPurchaseRequest[]
+
+  @@index([status, categoryId])
+}
+
+model FamilyDownload {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyId  String
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model FamilyAccess {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyId  String
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  grantedAt DateTime @default(now())
+
+  @@unique([userId, familyId])
+}
+
+model FamilyPurchaseRequest {
+  id          String         @id @default(cuid())
+  userId      String
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  familyId    String
+  family      Family         @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  note        String?        @db.Text
+  status      PurchaseStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  respondedAt DateTime?
+
+  @@index([status])
+}
+
+// ---------- Site settings ----------
+
+model SiteSetting {
+  id                  String  @id @default(cuid())
+  siteName            String  @default("BIMKien")
+  tagline             String?
+  taglineEn           String?
+  logoUrl             String?
+  phone               String?
+  email                String?
+  address             String?
+  facebookUrl         String?
+  youtubeUrl          String?
+  linkedinUrl         String?
+  zaloUrl             String?
+  heroTitleLine1      String?
+  heroTitleLine1En    String?
+  heroTitleLine2      String?
+  heroTitleLine2En    String?
+  heroSubtitle        String?
+  heroSubtitleEn      String?
+  heroImage           String?
+  defaultMetaTitle    String?
+  defaultMetaTitleEn  String?
+  defaultMetaDescription String?
+  defaultMetaDescriptionEn String?
+  paymentInstructions String? @db.Text
+  paymentInstructionsEn String? @db.Text
+}
+
+model ViewEvent {
+  id        String   @id @default(cuid())
+  postId    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model StatItem {
+  id      String  @id @default(cuid())
+  icon    String
+  value   String
+  label   String
+  labelEn String?
+  order   Int     @default(0)
+}
