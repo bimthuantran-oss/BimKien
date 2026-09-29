@@ -2,6 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { put } from '@vercel/blob';
+
+// Vercel's function filesystem is read-only outside /tmp, so seeding must write
+// placeholder family files to Blob storage there instead of local disk.
+const USE_BLOB = !!process.env.BLOB_READ_WRITE_TOKEN;
 
 const db = new PrismaClient();
 
@@ -507,8 +512,10 @@ export async function main() {
     );
   }
 
-  const storageDir = path.join(process.cwd(), 'storage', 'families');
-  await mkdir(storageDir, { recursive: true });
+  if (!USE_BLOB) {
+    const storageDir = path.join(process.cwd(), 'storage', 'families');
+    await mkdir(storageDir, { recursive: true });
+  }
 
   const familiesData = [
     {
@@ -571,8 +578,18 @@ export async function main() {
 
     const fileName = `${slug}.rfa`;
     const placeholderContent = `Đây là file mẫu placeholder cho family "${f.title}". Hãy vào /admin/family để tải lên file .rfa thật.`;
-    const storagePath = `families/${slug}.txt`;
-    await writeFile(path.join(process.cwd(), 'storage', storagePath), placeholderContent, 'utf-8');
+
+    let storagePath: string;
+    if (USE_BLOB) {
+      const blob = await put(`private/families/${slug}.txt`, placeholderContent, {
+        access: 'public',
+        contentType: 'text/plain; charset=utf-8',
+      });
+      storagePath = blob.url;
+    } else {
+      storagePath = `families/${slug}.txt`;
+      await writeFile(path.join(process.cwd(), 'storage', storagePath), placeholderContent, 'utf-8');
+    }
 
     await db.family.upsert({
       where: { slug },
