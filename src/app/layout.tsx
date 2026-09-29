@@ -10,6 +10,11 @@ import { localized } from '@/lib/i18n/localized';
 const sans = Inter({ subsets: ['latin', 'latin-ext'], variable: '--font-sans' });
 const display = Sora({ subsets: ['latin', 'latin-ext'], variable: '--font-display', weight: ['600', '700', '800'] });
 
+// Co-locate serverless functions with the Neon database (ap-southeast-1 /
+// Singapore) instead of Vercel's default US region, to avoid a cross-Pacific
+// round trip on every request.
+export const preferredRegion = 'sin1';
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
   const locale = getServerLocale();
