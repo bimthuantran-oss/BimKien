@@ -4,7 +4,6 @@ import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/admin-auth';
 import { saveUploadedFile } from '@/lib/upload';
-import { invalidateSiteSettingsCache } from '@/lib/settings';
 
 export async function saveSettings(formData: FormData) {
   await requireAdmin();
@@ -56,6 +55,5 @@ export async function saveSettings(formData: FormData) {
     await db.siteSetting.create({ data });
   }
 
-  invalidateSiteSettingsCache();
   revalidatePath('/', 'layout');
 }

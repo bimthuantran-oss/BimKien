@@ -33,14 +33,11 @@ export const DEFAULT_SETTINGS = {
 
 export type SiteSettings = typeof DEFAULT_SETTINGS;
 
-let cache: SiteSettings | null = null;
-
 export async function getSiteSettings(): Promise<SiteSettings> {
-  if (cache) return cache;
   try {
     const existing = await db.siteSetting.findFirst();
     if (existing) {
-      cache = {
+      return {
         id: existing.id,
         siteName: existing.siteName || DEFAULT_SETTINGS.siteName,
         tagline: existing.tagline ?? DEFAULT_SETTINGS.tagline,
@@ -67,14 +64,9 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         paymentInstructions: existing.paymentInstructions ?? DEFAULT_SETTINGS.paymentInstructions,
         paymentInstructionsEn: existing.paymentInstructionsEn,
       };
-      return cache;
     }
     return DEFAULT_SETTINGS;
   } catch {
     return DEFAULT_SETTINGS;
   }
-}
-
-export function invalidateSiteSettingsCache() {
-  cache = null;
 }
