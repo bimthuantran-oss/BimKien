@@ -7,7 +7,7 @@ const db = new PrismaClient();
 
 const COVER = (seed: string) => `https://images.unsplash.com/${seed}?q=80&w=1600&auto=format&fit=crop`;
 
-async function main() {
+export async function main() {
   console.log('Seeding...');
 
   const passwordHash = await bcrypt.hash('Password123!', 10);
@@ -636,11 +636,15 @@ async function main() {
   console.log('  hocvien2@bimkien.vn — Học viên');
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await db.$disconnect();
-  });
+// Only auto-run when executed directly (tsx prisma/seed.ts) — skipped when
+// imported as a module (e.g. by the one-time /api/internal-seed route).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await db.$disconnect();
+    });
+}
