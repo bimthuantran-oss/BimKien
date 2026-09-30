@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { saveSettings } from '@/lib/actions/settings';
 import type { SiteSettings } from '@/lib/settings';
 
@@ -100,7 +99,8 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           <Field label="Ảnh nền hero">
             {heroPreview ? (
               <div className="relative mb-2 aspect-video overflow-hidden rounded-lg bg-ink-100">
-                <Image src={heroPreview} alt="Hero" fill className="object-cover" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={heroPreview} alt="Hero" className="absolute inset-0 h-full w-full object-cover" />
               </div>
             ) : null}
             <input
@@ -163,7 +163,8 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           <Field label="Logo">
             {logoPreview ? (
               <div className="relative mb-2 h-16 w-16 overflow-hidden rounded-lg bg-ink-100">
-                <Image src={logoPreview} alt="Logo" fill className="object-cover" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={logoPreview} alt="Logo" className="absolute inset-0 h-full w-full object-cover" />
               </div>
             ) : null}
             <input

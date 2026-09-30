@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { FileBox } from 'lucide-react';
 import { saveFamily } from '@/lib/actions/families';
 
@@ -162,7 +161,8 @@ export function FamilyForm({ categories, initial }: { categories: Category[]; in
             <Field label="Ảnh xem trước">
               {previewImg ? (
                 <div className="relative mb-2 aspect-square overflow-hidden rounded-lg bg-ink-100">
-                  <Image src={previewImg} alt="Preview" fill className="object-contain p-2" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={previewImg} alt="Preview" className="absolute inset-0 h-full w-full object-contain p-2" />
                 </div>
               ) : null}
               <input

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { RichTextEditor } from '@/components/admin/RichTextEditor';
 import { savePost } from '@/lib/actions/posts';
 
@@ -164,7 +163,8 @@ export function PostForm({ categories, initial }: { categories: Category[]; init
             <Field label="Ảnh bìa">
               {coverPreview ? (
                 <div className="relative mb-2 aspect-video overflow-hidden rounded-lg bg-ink-100">
-                  <Image src={coverPreview} alt="Cover" fill className="object-cover" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={coverPreview} alt="Cover" className="absolute inset-0 h-full w-full object-cover" />
                 </div>
               ) : null}
               <input

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { saveCourse } from '@/lib/actions/courses';
 import { COURSE_LEVEL_LABEL } from '@/lib/constants';
 
@@ -151,7 +150,8 @@ export function CourseForm({ initial }: { initial?: CourseInitial }) {
             <Field label="Ảnh bìa">
               {coverPreview ? (
                 <div className="relative mb-2 aspect-video overflow-hidden rounded-lg bg-ink-100">
-                  <Image src={coverPreview} alt="Cover" fill className="object-cover" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={coverPreview} alt="Cover" className="absolute inset-0 h-full w-full object-cover" />
                 </div>
               ) : null}
               <input
