@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { UserPlus } from 'lucide-react';
 import { useLocale } from '@/components/providers/LocaleProvider';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -77,8 +78,7 @@ export default function RegisterPage() {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-ink-700">{t.auth.password}</label>
-            <input
-              type="password"
+            <PasswordInput
               name="password"
               required
               minLength={8}

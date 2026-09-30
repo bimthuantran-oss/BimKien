@@ -6,6 +6,7 @@ import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LogIn } from 'lucide-react';
 import { useLocale } from '@/components/providers/LocaleProvider';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 
 function LoginForm() {
   const router = useRouter();
@@ -52,8 +53,7 @@ function LoginForm() {
           </div>
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-ink-700">{t.auth.password}</label>
-            <input
-              type="password"
+            <PasswordInput
               name="password"
               required
               className="w-full rounded-lg border border-ink-200 p-3 text-sm focus:border-accent-500 focus:outline-none"
